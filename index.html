@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniChat</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 16px;
+      background: #0b0d12;
+      color: #f5f7fb;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #171c26;
+      border: 1px solid #2a3242;
+      font-size: 13px;
+      color: #a3e635;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #333b4d;
+      background: #1b202c;
+      color: #ffffff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      border-color: #2563eb;
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      border-color: #dc2626;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .controls .btn {
+      flex: 1;
+      padding: 12px;
+      font-weight: 600;
+    }
+
+    /* নীল বর্ডারওয়ালা নিজের ক্যামেরা বক্স নিচে রাখা */
+    #localVideo,
+    .local-video-box {
+      position: fixed;
+      right: 14px;
+      bottom: 115px;
+      width: 110px;
+      height: 150px;
+      border: 2px solid #38bdf8;
+      border-radius: 12px;
+      object-fit: cover;
+      background: #141820;
+      z-index: 20;
+    }
+
+    /* মিনি-চ্যাট / কমেন্ট সেকশন */
+    .mini-comment-box {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 12px;
+      background: #14171f;
+      border: 1px solid #262c3a;
+    }
+
+    .mini-comment-messages {
+      max-height: 140px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .mini-comment-form {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mini-comment-input {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #2f3646;
+      background: #0d1016;
+      color: #ffffff;
+    }
+
+    /* ব্লক স্ক্রিন */
+    #blockedBanner {
+      display: none;
+      margin: 12px 0;
+      padding: 14px;
+      border-radius: 12px;
+      background: #2a1215;
+      border: 1px solid #991b1b;
+      color: #fecaca;
+      font-size: 14px;
+    }
+
+    /* মডাল */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.82);
+      z-index: 9999;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .modal-card {
+      max-width: 680px;
+      margin: 24px auto;
+      background: #16181d;
+      border: 1px solid #2e333d;
+      border-radius: 12px;
+      padding: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span class="status-badge" id="appStatus">Ready to connect</span>
+    <div style="display:flex;gap:8px;">
+      <button id="openReportBtn" class="btn" type="button">Report</button>
+      <button id="openReviewBtn" class="btn" type="button">Review Reports</button>
+    </div>
+  </div>
+
+  <div id="blockedBanner"></div>
+
+  <video id="localVideo" class="local-video-box" autoplay muted playsinline></video>
+
+  <div class="controls">
+    <button id="startNextBtn" class="btn btn-primary" type="button">Start / Next ▶</button>
+    <button id="stopBtn" class="btn btn-danger" type="button">Stop ■</button>
+  </div>
+
+  <div class="mini-comment-box" id="miniCommentBox">
+    <div class="mini-comment-messages" id="commentMessages"></div>
+    <form class="mini-comment-form" id="commentForm">
+      <input
+        type="text"
+        id="commentInput"
+        class="mini-comment-input"
+        placeholder="Write a comment or message..."
+        autocomplete="off"
+      />
+      <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+  </div>
+
+  <!-- Report Modal -->
+  <div id="reportModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h3 style="margin:0;font-size:18px;">Report User</h3>
+        <button id="closeReportBtn" class="btn" type="button">Close</button>
+      </div>
+      <div style="margin-bottom:10px;font-size:13px;color:#cbd5e1;">
+        <label for="reportReasonSelect">Select reason:</label>
+        <select id="reportReasonSelect" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;background:#0f1115;color:#fff;border:1px solid #3a414e;">
+          <option value="Middle finger / Offensive gesture">Middle finger / Offensive gesture</option>
+          <option value="Indecent behavior">Indecent behavior</option>
+          <option value="Harassment or abuse">Harassment or abuse</option>
+        </select>
+      </div>
+      <button id="submitReportBtn" class="btn btn-danger" type="button">Submit Report</button>
+      <div id="reportFeedback" style="margin-top:10px;font-size:13px;color:#93c5fd;"></div>
+    </div>
+  </div>
+
+  <!-- Admin Review Modal -->
+  <div id="reviewModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <h3 style="margin:0;font-size:18px;">Pending Reports Review</h3>
+        <button id="closeReviewBtn" class="btn" type="button">Close</button>
+      </div>
+
+      <div id="pinGate" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+        <input
+          id="adminPinInput"
+          type="password"
+          placeholder="Enter Admin PIN"
+          style="flex:1;min-width:160px;padding:8px 10px;border-radius:8px;border:1px solid #3a414e;background:#0f1115;color:#fff;"
+        />
+        <button id="unlockReviewBtn" class="btn btn-primary" type="button">Unlock</button>
+      </div>
+
+      <div id="reviewStatusMsg" style="font-size:13px;color:#9ca3af;margin-bottom:10px;"></div>
+      <div id="reportsList" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      get,
+      set,
+      update,
+      push,
+      onChildAdded,
+      query,
+      orderByChild,
+      equalTo
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      databaseURL: "https://mini-chat-alpha-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const ADMIN_PIN = "0326";
+    const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
+
+    window.currentRoomId = window.currentRoomId || null;
+    window.currentPeerUserId = window.currentPeerUserId || null;
+
+    function getMyUserId() {
+      let uid = localStorage.getItem("minichat_uid");
+      if (!uid) {
+        uid = "u_" + crypto.randomUUID().slice(0, 8);
+        localStorage.setItem("minichat_uid", uid);
+      }
+      return uid;
+    }
+
+    export async function isUserBlocked(userId = getMyUserId()) {
+      const snap = await get(ref(db, `blockedUsers/${userId}`));
+      if (!snap.exists()) return { blocked: false, remainingDays: 0 };
+
+      const data = snap.val();
+      const blockedUntil = Number(data.blockedUntil || 0);
+      const now = Date.now();
+
+      if (blockedUntil > now) {
+        const remainingMs = blockedUntil - now;
+        const remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
+        return { blocked: true, remainingDays, blockedUntil };
+      }
+      return { blocked: false, remainingDays: 0 };
+    }
+
+    export async function submitPendingReport({ reportedUserId, reason, roomId = "" }) {
+      const reporterId = getMyUserId();
+      if (!reportedUserId || reporterId === reportedUserId) {
+        return { ok: false, message: "No active peer user to report." };
+      }
+
+      const pairKey = `${reporterId}_${reportedUserId}`;
+      const lockRef = ref(db, `reportLocks/${pairKey}`);
+      const lockSnap = await get(lockRef);
+
+      if (lockSnap.exists()) {
+        return { ok: false, message: "You have already reported this user." };
+      }
+
+      const reportId = "rep_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+
+      await set(ref(db, `reports/${reportId}`), {
+        reportId,
+        reportedUserId,
+        reporterId,
+        pairKey,
+        reason,
+        roomId,
+        status: "pending",
+        createdAt: Date.now()
+      });
+
+      await set(lockRef, {
+        reportId,
+        reportedAt: Date.now()
+      });
+
+      return { ok: true, message: "Report submitted for review." };
+    }
+
+    async function enforceBlockStateOnUI() {
+      const status = await isUserBlocked(getMyUserId());
+      const banner = document.getElementById("blockedBanner");
+      const startBtn = document.getElementById("startNextBtn");
+
+      if (status.blocked) {
+        banner.style.display = "block";
+        banner.textContent = `You are blocked from using MiniChat for ${status.remainingDays} more day(s) due to an approved report.`;
+        if (startBtn) startBtn.disabled = true;
+        return true;
+      }
+
+      banner.style.display = "none";
+      if (startBtn) startBtn.disabled = false;
+      return false;
+    }
+
+    // Report Modal handlers
+    const reportModal = document.getElementById("reportModal");
+    const openReportBtn = document.getElementById("openReportBtn");
+    const closeReportBtn = document.getElementById("closeReportBtn");
+    const submitReportBtn = document.getElementById("submitReportBtn");
+    const reportReasonSelect = document.getElementById("reportReasonSelect");
+    const reportFeedback = document.getElementById("reportFeedback");
+
+    openReportBtn?.addEventListener("click", () => {
+      reportFeedback.textContent = window.currentPeerUserId
+        ? `Target user: ${window.currentPeerUserId}`
+        : "Note: Connect with a peer first (or set window.currentPeerUserId to test).";
+      reportModal.style.display = "block";
+    });
+
+    closeReportBtn?.addEventListener("click", () => {
+      reportModal.style.display = "none";
+    });
+
+    submitReportBtn?.addEventListener("click", async () => {
+      submitReportBtn.disabled = true;
+      reportFeedback.textContent = "Submitting...";
+      const res = await submitPendingReport({
+        reportedUserId: window.currentPeerUserId,
+        reason: reportReasonSelect.value,
+        roomId: window.currentRoomId || ""
+      });
+      reportFeedback.textContent = res.message;
+      submitReportBtn.disabled = false;
+    });
+
+    // Admin Review Modal handlers + Report Stats
+    async function getUserReportStats(targetUserId) {
+      const qByTarget = query(
+        ref(db, "reports"),
+        orderByChild("reportedUserId"),
+        equalTo(targetUserId)
+      );
+      const snap = await get(qByTarget);
+      if (!snap.exists()) {
+        return { total: 0, approved: 0, pending: 0 };
+      }
+
+      const allForUser = Object.values(snap.val());
+      const total = allForUser.length;
+      const approved = allForUser.filter((r) => r.status === "approved").length;
+      const pending = allForUser.filter((r) => r.status === "pending").length;
+
+      return { total, approved, pending };
+    }
+
+    async function loadPendingReports() {
+      const listEl = document.getElementById("reportsList");
+      const statusEl = document.getElementById("reviewStatusMsg");
+      listEl.innerHTML = "";
+      statusEl.textContent = "Loading pending reports...";
+
+      const q = query(ref(db, "reports"), orderByChild("status"), equalTo("pending"));
+      const snap = await get(q);
+
+      if (!snap.exists()) {
+        statusEl.textContent = "No pending reports found.";
+        return;
+      }
+
+      const items = Object.values(snap.val()).sort((a, b) => b.createdAt - a.createdAt);
+      statusEl.textContent = `${items.length} pending report(s)`;
+
+      for (const rep of items) {
+        const stats = await getUserReportStats(rep.reportedUserId);
+        const isMulti = stats.total >= 2;
+
+        const card = document.createElement("div");
+        card.style.cssText = `
+          background:#1f242d;
+          border:1px solid ${isMulti ? "#f59e0b" : "#323946"};
+          border-radius:10px;
+          padding:12px;
+        `;
+
+        const dateStr = new Date(rep.createdAt).toLocaleString();
+        const multiBadge = isMulti
+          ? `<span style="display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:#451a03;color:#fcd34d;font-size:11px;border:1px solid #b45309;">Multiple Reports (${stats.total})</span>`
+          : "";
+
+        card.innerHTML = `
+          <div style="font-size:14px;margin-bottom:4px;">
+            <strong>Reported User:</strong> ${rep.reportedUserId}${multiBadge}
+          </div>
+          <div style="font-size:12px;color:#cbd5e1;margin-bottom:6px;">
+            <strong>Total Reports:</strong> ${stats.total} | <strong>Pending:</strong> ${stats.pending} | <strong>Past Approved Blocks:</strong> ${stats.approved}
+          </div>
+          <div style="font-size:13px;color:#fca5a5;margin-bottom:4px;"><strong>Reason:</strong> ${rep.reason}</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:10px;">Room: ${rep.roomId || "N/A"} | Time: ${dateStr}</div>
+          <div style="display:flex;gap:8px;">
+            <button data-action="approve" class="btn btn-danger" type="button">Approve (10d Block)</button>
+            <button data-action="reject" class="btn" type="button">Reject</button>
+          </div>
+        `;
+
+        const approveBtn = card.querySelector('[data-action="approve"]');
+        const rejectBtn = card.querySelector('[data-action="reject"]');
+
+        approveBtn.addEventListener("click", async () => {
+          approveBtn.disabled = true;
+          rejectBtn.disabled = true;
+          const blockedUntil = Date.now() + TEN_DAYS_MS;
+
+          await set(ref(db, `blockedUsers/${rep.reportedUserId}`), {
+            userId: rep.reportedUserId,
+            reason: rep.reason,
+            reportId: rep.reportId,
+            blockedAt: Date.now(),
+            blockedUntil
+          });
+
+          await update(ref(db, `reports/${rep.reportId}`), {
+            status: "approved",
+            reviewedAt: Date.now(),
+            blockedUntil
+          });
+
+          card.remove();
+          statusEl.textContent = `Blocked ${rep.reportedUserId} for 10 days.`;
+        });
+
+        rejectBtn.addEventListener("click", async () => {
+          approveBtn.disabled = true;
+          rejectBtn.disabled = true;
+
+          await update(ref(db, `reports/${rep.reportId}`), {
+            status: "rejected",
+            reviewedAt: Date.now()
+          });
+
+          card.remove();
+          statusEl.textContent = `Report ${rep.reportId} rejected.`;
+        });
+
+        listEl.appendChild(card);
+      }
+    }
+
+    const reviewModal = document.getElementById("reviewModal");
+    const openReviewBtn = document.getElementById("openReviewBtn");
+    const closeReviewBtn = document.getElementById("closeReviewBtn");
+    const unlockReviewBtn = document.getElementById("unlockReviewBtn");
+    const pinInput = document.getElementById("adminPinInput");
+    const pinGate = document.getElementById("pinGate");
+    const statusMsg = document.getElementById("reviewStatusMsg");
+
+    openReviewBtn?.addEventListener("click", () => {
+      reviewModal.style.display = "block";
+      statusMsg.textContent = "Enter PIN to view pending reports.";
+    });
+
+    closeReviewBtn?.addEventListener("click", () => {
+      reviewModal.style.display = "none";
+    });
+
+    unlockReviewBtn?.addEventListener("click", async () => {
+      if (pinInput.value.trim() !== ADMIN_PIN) {
+        statusMsg.textContent = "Incorrect PIN.";
+        return;
+      }
+      pinGate.style.display = "none";
+      pinInput.value = "";
+      await loadPendingReports();
+    });
+
+    // Room Comments
+    const commentForm = document.getElementById("commentForm");
+    const commentInput = document.getElementById("commentInput");
+    const commentMessages = document.getElementById("commentMessages");
+    let activeCommentRoom = null;
+
+    function listenRoomComments(roomId) {
+      if (!roomId || activeCommentRoom === roomId) return;
+      activeCommentRoom = roomId;
+      commentMessages.innerHTML = "";
+
+      const commentsRef = ref(db, `roomComments/${roomId}`);
+      onChildAdded(commentsRef, (snap) => {
+        const msg = snap.val();
+        if (!msg) return;
+
+        const item = document.createElement("div");
+        item.style.cssText = "padding:6px 8px;border-radius:8px;background:#1e2430;color:#f3f4f6;";
+        item.innerHTML = `<strong style="color:#60a5fa;">${msg.senderId}:</strong> ${msg.text}`;
+        commentMessages.appendChild(item);
+        commentMessages.scrollTop = commentMessages.scrollHeight;
+      });
+    }
+
+    commentForm?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = commentInput.value.trim();
+      const roomId = window.currentRoomId || activeCommentRoom;
+      if (!text || !roomId) return;
+
+      await push(ref(db, `roomComments/${roomId}`), {
+        senderId: getMyUserId(),
+        text,
+        createdAt: Date.now()
+      });
+
+      commentInput.value = "";
+    });
+
+    document.getElementById("startNextBtn")?.addEventListener("click", async () => {
+      const blocked = await enforceBlockStateOnUI();
+      if (blocked) return;
+      if (window.currentRoomId) listenRoomComments(window.currentRoomId);
+    });
+
+    enforceBlockStateOnUI();
+  </script>
+</body>
+                                                                              </html>
+                                                                              
