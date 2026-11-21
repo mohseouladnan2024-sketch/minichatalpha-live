@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ExamHub — Complete App Prototype</title>
+  <style>
+    :root {
+      --primary: #1d4ed8;
+      --primary-dark: #1e3a8a;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #cbd5e1;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --warn: #d97706;
+      --bg-img: none;
+    }
+
+    body.dark {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #334155;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .container { max-width: 520px; margin: 0 auto; min-height: 100vh; background: var(--bg); position: relative; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+    .title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .sub { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+    .field { margin-bottom: 12px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 14px;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+
+    .btn {
+      width: 100%; padding: 11px 14px; border: none; border-radius: 10px;
+      background: var(--primary); color: #fff; font-weight: 600; font-size: 14px; cursor: pointer;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-sec { background: #475569; }
+    .btn-ok { background: var(--success); }
+    .btn-err { background: var(--danger); }
+    .btn-sm { width: auto; padding: 7px 11px; font-size: 12px; border-radius: 8px; }
+
+    .row { display: flex; gap: 8px; align-items: center; }
+    .between { display: flex; justify-content: space-between; align-items: center; }
+    .hidden { display: none !important; }
+
+    .alert { padding: 10px 12px; border-radius: 10px; font-size: 13px; margin-top: 10px; }
+    .alert.err { background: #fee2e2; color: #991b1b; }
+    .alert.ok { background: #dcfce7; color: #166534; }
+
+    /* LOGIN */
+    #loginView { padding: 24px 16px; }
+
+    /* TOP & BOTTOM BARS */
+    .top-bar {
+      position: sticky; top: 0; z-index: 30;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; background: var(--primary); color: #fff;
+    }
+    .brand { font-weight: 700; font-size: 16px; }
+    .top-icons { display: flex; gap: 8px; align-items: center; }
+    .icon-btn {
+      background: rgba(255,255,255,0.18); border: none; color: #fff;
+      width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 15px;
+      display: flex; align-items: center; justify-content: center; position: relative;
+    }
+    .badge {
+      position: absolute; top: -3px; right: -3px; background: var(--danger);
+      color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 99px; font-weight: 700;
+    }
+
+    .bottom-bar {
+      position: sticky; bottom: 0; z-index: 30;
+      padding: 10px 14px; background: var(--card); border-top: 1px solid var(--border);
+    }
+
+    .page-pad { padding: 14px 14px 80px 14px; }
+
+    /* MIDDLE DASHBOARD */
+    .mid-bg {
+      background-image: var(--bg-img);
+      background-size: cover;
+      background-position: center;
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .perf-box {
+      background: rgba(255,255,255,0.92); color: #0f172a;
+      border-radius: 14px; padding: 14px; border: 1px solid var(--border); margin-bottom: 14px;
+    }
+    body.dark .perf-box { background: rgba(30,41,59,0.92); color: #f8fafc; }
+    .bars { display: flex; align-items: flex-end; gap: 8px; height: 60px; margin: 10px 0; }
+    .bar { flex: 1; background: var(--primary); border-radius: 6px 6px 0 0; }
+    .rot-card { background: var(--bg); padding: 12px; border-radius: 10px; border-left: 4px solid var(--primary); font-size: 13px; }
+
+    .friend-card {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--card); padding: 10px 12px; border-radius: 12px;
+      border: 1px solid var(--border); margin-bottom: 8px;
+    }
+    .avatar {
+      width: 38px; height: 38px; border-radius: 50%; background: var(--primary);
+      color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;
+    }
+
+    .opt-btn {
+      display: block; width: 100%; text-align: left; padding: 10px 12px;
+      border-radius: 10px; border: 1px solid var(--border); background: var(--card);
+      color: var(--text); margin-bottom: 8px; cursor: pointer; font-size: 14px;
+    }
+    .opt-btn.selected { border-color: var(--primary); background: rgba(29,78,216,0.12); font-weight: 600; }
+    .opt-btn:disabled { cursor: not-allowed; opacity: 0.85; }
+
+    .res-correct { background: #dcfce7 !important; border-color: #16a34a !important; color: #14532d !important; }
+    .res-wrong { background: #fee2e2 !important; border-color: #dc2626 !important; color: #7f1d1d !important; }
+
+    .pill { display: inline-block; padding: 3px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; background: var(--bg); border: 1px solid var(--border); }
+
+    /* MODAL */
+    .modal-bg {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      z-index: 60; align-items: center; justify-content: center; padding: 14px;
+    }
+    .modal {
+      background: var(--card); color: var(--text); width: 100%; max-width: 440px; max-height: 85vh;
+      overflow-y: auto; padding: 18px; border-radius: 16px; border: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- PAGE 1: LOGIN -->
+  <div id="loginView">
+    <div class="card">
+      <div class="title" style="text-align:center;">লগইন</div>
+      <div class="sub" style="text-align:center;">Demo Login: <b>student@example.com</b> / Pass: <b>1234</b> / SecQ: <b>math</b></div>
+
+      <div class="field">
+        <label>Phone No / Email</label>
+        <input id="loginId" type="text" placeholder="017xxxxxxxx বা email@domain.com" value="student@example.com" />
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input id="loginPass" type="password" placeholder="Password দিন" />
+      </div>
+
+      <button id="loginBtn" class="btn" onclick="doLogin()">Login</button>
+
+      <div class="between" style="margin-top:12px;">
+        <button class="btn btn-sec btn-sm" onclick="forgotPass()">Forgot Password</button>
+        <button class="btn btn-sec btn-sm" onclick="securityQuestionPrompt()">Security Question</button>
+      </div>
+
+      <div id="loginMsg" class="alert hidden"></div>
+    </div>
+  </div>
+
+  <!-- MAIN APP SHELL (PAGE 2 + SUB-PAGES) -->
+  <div id="appShell" class="hidden">
+    <div id="topBar" class="top-bar">
+      <div class="row" style="gap:8px;">
+        <button id="backBtn" class="icon-btn hidden" onclick="goHome()">←</button>
+        <div class="brand" id="brandTitle">ExamHub</div>
+      </div>
+      <div class="top-icons">
+        <button class="icon-btn" title="Profile" onclick="openProfilePage()">👤</button>
+        <button class="icon-btn" title="Notification" onclick="openNotifPage()">
+          🔔 <span id="notifBadge" class="badge">2</span>
+        </button>
+        <button class="icon-btn" title="Chat" onclick="openChatPage()">💬</button>
+        <button class="icon-btn" title="More" onclick="openMorePage()">☰</button>
+      </div>
+    </div>
+
+    <!-- PAGE 2: HOME DASHBOARD -->
+    <div id="homeView" class="page-pad">
+      <div class="mid-bg" id="dashMidBg">
+        <div class="perf-box">
+          <div class="between">
+            <b>Student Performance Graph</b>
+            <span class="pill" id="creditPill">Scan Credits: 10</span>
+          </div>
+          <div class="bars">
+            <div class="bar" style="height:40%"></div>
+            <div class="bar" style="height:68%"></div>
+            <div class="bar" style="height:52%"></div>
+            <div class="bar" style="height:86%"></div>
+            <div class="bar" style="height:74%"></div>
+          </div>
+          <div id="rotatingRecord" class="rot-card"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div class="title" style="font-size:16px;">Friend Suggestions</div>
+        <div id="suggestList"></div>
+      </div>
+    </div>
+
+    <!-- PAGE 3: CATEGORY & VARSITY SELECTION -->
+    <div id="catView" class="page-pad hidden">
+      <div class="card">
+        <div class="title">Category নির্বাচন করুন</div>
+        <div class="sub">আপনার প্রোফাইল অনুযায়ী অপশন ফিল্টার করা হয়েছে</div>
+
+        <button class="opt-btn" onclick="selectCategory('Medical', 60)">1. Medical (৬০ মিনিট / ১০০ MCQ)</button>
+
+        <div class="field" style="margin-top:10px;">
+          <label>2. University (Varsity নির্বাচন করুন)</label>
+          <select id="varsitySelect" onchange="updateVarsityEligibility()">
+            <option value="">-- Varsity সিলেক্ট করুন --</option>
+            <option value="DU">DU</option>
+            <option value="CU">CU</option>
+            <option value="KU">KU</option>
+            <option value="RU">RU</option>
+            <option value="JU">JU</option>
+            <option value="SUST">SUST</option>
+            <option value="GST">GST</option>
+            <option value="Agriculture">Agriculture</option>
+          </select>
+          <div id="varsityNote" class="sub" style="margin-top:6px;"></div>
+          <button class="btn" onclick="startVarsityExam()">University Exam শুরু করুন</button>
+        </div>
+
+        <button id="engBtn" class="opt-btn" style="margin-top:12px;" onclick="selectCategory('Engineering (BUET/CUET/KUET/RUET)', 120)">
+          3. Engineering (BUET, CUET, KUET, RUET etc.) — Only 1st Timer
+        </button>
+      </div>
+    </div>
+
+    <!-- PAGE 4: QUESTION PASTE & CAMERA/IMAGE SCAN -->
+    <div id="qInputView" class="page-pad hidden">
+      <div class="card">
+        <div class="title">প্রশ্ন, উত্তর ও ব্যাখ্যা যুক্ত করুন</div>
+        <div class="sub">টেক্সট পেস্ট করতে পারেন অথবা ক্যামেরা/ছবি থেকে স্ক্যান করতে পারেন</div>
+
+        <div class="field">
+          <label>Camera / Photo দিয়ে প্রশ্ন স্ক্যান (যেকোনো ভাষার বই)</label>
+          <input id="camInput" type="file" accept="image/*" capture="environment" onchange="scanImageToQuestions(event)" />
+          <div id="scanStatus" class="sub" style="margin-top:6px;"></div>
+        </div>
+
+        <div class="field">
+          <label>প্রশ্ন, অপশন, সঠিক উত্তর ও ব্যাখ্যা পেস্ট/এডিট করুন</label>
+          <div class="sub" style="margin-bottom:6px;">
+            ফরম্যাট: <code>প্রশ্ন | অপশন ১, অপশন ২, অপশন ৩, অপশন ৪ | সঠিক উত্তর | ব্যাখ্যা</code> (প্রতি লাইনে একটি প্রশ্ন)
+          </div>
+          <textarea id="rawQuestions">পানির রাসায়নিক সংকেত কোনটি? | H2O, CO2, NaCl, CH4 | H2O | হাইড্রোজেনের ২টি ও অক্সিজেনের ১টি পরমাণু মিলে H2O গঠিত হয়।
+বাংলাদেশের জাতীয় ফুল কী? | শাপলা, গোলাপ, পদ্ম, জবা | শাপলা | শাপলা বাংলাদেশের জাতীয় ফুল।</textarea>
+        </div>
+
+        <button class="btn btn-ok" onclick="launchExamFromInput()">Exam শুরু করুন (Page 5)</button>
+      </div>
+    </div>
+
+    <!-- PAGE 5: LIVE EXAM -->
+    <div id="examView" class="page-pad hidden">
+      <div class="card" style="background:var(--primary); color:#fff;">
+        <div class="between">
+          <div><b id="examCatLabel">Exam</b></div>
+          <div style="font-size:18px; font-weight:700;" id="examTimer">01:00</div>
+        </div>
+        <div style="font-size:12px; opacity:0.9; margin-top:4px;">একবার উত্তর দিলে Lock হয়ে যাবে • Bookmark করতে পারবেন</div>
+      </div>
+
+      <div id="examQuestionsContainer"></div>
+
+      <button class="btn btn-err" onclick="submitExam()">Exam Submit করুন</button>
+    </div>
+
+    <!-- EXAM RESULT & POST-MORTEM -->
+    <div id="resultView" class="page-pad hidden">
+      <div class="card" id="resultSummary"></div>
+      <div id="resultPostMortem"></div>
+      <button class="btn" onclick="goHome()">Home-এ ফিরে যান</button>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div id="profileView" class="page-pad hidden">
+      <div class="card">
+        <div class="between">
+          <div class="title">আমার প্রোফাইল</div>
+          <span class="pill" id="friendCatBadge">Category: Best Friend</span>
+        </div>
+
+        <div class="row" style="margin:12px 0;">
+          <div class="avatar" id="profAvatar" style="width:64px; height:64px; font-size:22px;">A</div>
+          <div>
+            <div style="font-weight:700; font-size:17px;" id="profFullNameDisplay"></div>
+            <div class="sub" style="margin:0;" id="profBioDisplay"></div>
+          </div>
+        </div>
+
+        <div class="field"><label>Add Photo (Optional / Skip possible)</label><input type="file" accept="image/*" onchange="setAvatarImg(event)" /></div>
+        <div class="field">
+          <label>Bio (Max 240 words, Optional)</label>
+          <div class="row" style="margin-bottom:6px; flex-wrap:wrap;">
+            <button class="btn btn-sec btn-sm" onclick="setQuickBio('Sleeping')">Sleeping</button>
+            <button class="btn btn-sec btn-sm" onclick="setQuickBio('Don\'t disturb')">Don't disturb</button>
+            <button class="btn btn-sec btn-sm" onclick="setQuickBio('Running')">Running</button>
+            <button class="btn btn-sec btn-sm" onclick="setQuickBio('Walking')">Walking</button>
+            <button class="btn btn-sec btn-sm" onclick="setQuickBio('Traveling')">Traveling</button>
+          </div>
+          <textarea id="pBio" placeholder="Bio লিখুন..."></textarea>
+        </div>
+
+        <div class="field"><label>First Name (যেকোনো ভাষা)</label><input id="pFirst" type="text" /></div>
+        <div class="field"><label>Last Name / ডাকনাম (Optional)</label><input id="pLast" type="text" /></div>
+        <div class="field"><label>School-এর নাম</label><input id="pSchool" type="text" /></div>
+        <div class="field"><label>SSC GPA (বাধ্যতামূলক)</label><input id="pSsc" type="text" placeholder="যেমন: 5.00" /></div>
+        <div class="field"><label>College-এর নাম</label><input id="pCollege" type="text" /></div>
+        <div class="field">
+          <label>Class (বাধ্যতামূলক)</label>
+          <select id="pClass" onchange="toggleHscField()">
+            <option value="1st year">1st year</option>
+            <option value="2nd year">2nd year</option>
+            <option value="HSC examinee">HSC examinee</option>
+            <option value="HSC completed">HSC completed</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>2nd Timer কিনা?</label>
+          <select id="pSecondTimer">
+            <option value="no">No (1st Timer)</option>
+            <option value="yes">Yes (2nd Timer)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label id="hscLabel">HSC GPA (বাধ্যতামূলক)</label>
+          <input id="pHsc" type="text" placeholder="যেমন: 5.00" />
+        </div>
+        <div class="field"><label>Phone Number (বাধ্যতামূলক)</label><input id="pPhone" type="text" /></div>
+        <div class="field"><label>Email Address (Optional)</label><input id="pEmail" type="email" /></div>
+        <div class="field"><label>Hobby (শুধু বন্ধুরা দেখবে)</label><input id="pHobby" type="text" placeholder="যেমন: Coding, Reading" /></div>
+
+        <button class="btn btn-ok" onclick="saveProfile()">Profile Save করুন</button>
+        <div id="profMsg" class="alert hidden"></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATION PAGE -->
+    <div id="notifView" class="page-pad hidden">
+      <div class="card">
+        <div class="title">a) Friend Requests</div>
+        <div class="row" style="margin-bottom:10px;">
+          <button class="btn btn-sec btn-sm" onclick="renderFriendReqTab('sent')">Sent Friend Requests</button>
+          <button class="btn btn-sec btn-sm" onclick="renderFriendReqTab('incoming')">Requests</button>
+        </div>
+        <div id="friendReqBox"></div>
+      </div>
+
+      <div class="card">
+        <div class="title">b) Challenges</div>
+        <div class="field">
+          <label>Give Challenge (Friend বা Not Friend যে কাউকে — প্রশ্ন পেস্ট বা ছবি)</label>
+          <input id="chalTarget" type="text" placeholder="কার নাম/আইডিতে চ্যালেঞ্জ দেবেন?" />
+          <textarea id="chalQuestion" style="margin-top:8px;" placeholder="চ্যালেঞ্জের প্রশ্ন পেস্ট করুন..."></textarea>
+          <input type="file" accept="image/*" style="margin-top:6px;" onchange="alert('চ্যালেঞ্জের ছবি যুক্ত হয়েছে!')" />
+          <button class="btn btn-sm" style="margin-top:8px;" onclick="sendChallenge()">Challenge পাঠান</button>
+        </div>
+        <div style="margin-top:12px;">
+          <b>b.2. New Challenge</b>
+          <div id="challengeList" style="margin-top:6px;"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="title">c) Security Notification</div>
+        <div id="secNotifList" class="sub"></div>
+      </div>
+    </div>
+
+    <!-- CHAT PAGE -->
+    <div id="chatView" class="page-pad hidden">
+      <div class="card">
+        <div class="between">
+          <div class="title">Chat (শুধু বন্ধুদের সাথে)</div>
+          <button class="btn btn-sec btn-sm" onclick="createStudyGroup()">+ Study Group</button>
+        </div>
+        <div class="field">
+          <label>কথোপকথন সিলেক্ট করুন</label>
+          <select id="chatPartner" onchange="renderChatMessages()">
+            <option value="তানভীর হাসান">তানভীর হাসান (1-to-1 Private)</option>
+            <option value="নুসরাত জাহান">নুসরাত জাহান (1-to-1 Private)</option>
+            <option value="HSC Study Group">HSC Study Group (Group)</option>
+          </select>
+        </div>
+        <div id="chatBox" style="background:var(--bg); padding:10px; border-radius:10px; min-height:140px; max-height:220px; overflow-y:auto; margin-bottom:10px;"></div>
+        <div class="row">
+          <input id="chatInput" type="text" placeholder="মেসেজ লিখুন..." />
+          <button class="btn btn-sm" onclick="sendChatMsg()">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOOKMARKS PAGE -->
+    <div id="bookmarksView" class="page-pad hidden">
+      <div class="card">
+        <div class="title">Bookmarks (সেভ করা প্রশ্ন)</div>
+        <div id="bookmarkList"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div id="settingsView" class="page-pad hidden">
+      <div class="card">
+        <div class="title">Settings</div>
+        <div class="sub">অপশনগুলোর ভেতরের বিস্তারিত বিষয় নিচে দেওয়া আছে</div>
+
+        <!-- ACCOUNT -->
+        <div class="card" style="background:var(--bg);">
+          <div style="font-size:17px; font-weight:700;">Account</div>
+          <div class="sub">Security Question, Password, Email, Login Data, Phone Number</div>
+          <button class="btn btn-sec btn-sm" onclick="openAccountModal()">Account Manage করুন</button>
+        </div>
+
+        <!-- PRIVACY -->
+        <div class="card" style="background:var(--bg);">
+          <div style="font-size:17px; font-weight:700;">Privacy</div>
+          <div class="sub">Last seen & Online, Profile Photo, School/College, GPA, Read receipts, Blocking, Chat lock</div>
+          <div class="field">
+            <label>Who can see your profile picture</label>
+            <select id="privPic"><option>everyone</option><option>friends</option><option>friends except</option><option>only me</option></select>
+          </div>
+          <div class="field">
+            <label>Who can see your School / College Name</label>
+            <select id="privSchool"><option>everyone</option><option>friends</option><option>friends except</option><option>only me</option></select>
+          </div>
+          <div class="field">
+           <label>Who can see your SSC & HSC GPA</label>
+            <select id="privGpa"><option>everyone</option><option>friends</option><option>friends except</option><option>only me</option></select>
+          </div>
+          <div class="field">
+            <label><input type="checkbox" id="privRead" checked style="width:auto;" /> Read receipts (Seen status)</label>
+          </div>
+          <div class="field">
+            <label>Chat Lock PIN/Password</label>
+            <input id="chatLockPin" type="password" placeholder="PIN সেট করুন" />
+          </div>
+          <div class="field">
+            <label>Blocked Members</label>
+            <div id="blockedList" class="sub">কেউ ব্লক করা নেই</div>
+          </div>
+          <button class="btn btn-sm" onclick="alert('Privacy সেটিংস আপডেট হয়েছে!')">Save Privacy</button>
+        </div>
+
+        <!-- APPEARANCE -->
+        <div class="card" style="background:var(--bg);">
+          <div style="font-size:17px; font-weight:700;">Appearance</div>
+          <div class="sub">Theme (Dark/Light), Background Color, Background Image</div>
+          <div class="field">
+            <label>Theme</label>
+            <select id="themeSel" onchange="applyTheme()">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Background Color (Top bar, Timer, Start Exam)</label>
+            <input id="bgColorPicker" type="color" value="#1d4ed8" onchange="applyBgColor()" />
+          </div>
+          <div class="field">
+            <label>Background Image (Page 2 Middle Rotating Area)</label>
+            <select id="bgImgSel" onchange="applyBgImg()">
+              <option value="none">Default Clean</option>
+              <option value="linear-gradient(135deg, #dbeafe, #e0e7ff)">Soft Blue Gradient</option>
+              <option value="linear-gradient(135deg, #dcfce7, #dbeafe)">Mint Study Gradient</option>
+              <option value="linear-gradient(135deg, #fef3c7, #fce7f3)">Warm Pastel Gradient</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- LANGUAGE -->
+        <div class="card" style="background:var(--bg);">
+          <div style="font-size:17px; font-weight:700;">App Language</div>
+          <div class="sub">যেকোনো ভাষা নির্বাচন করুন</div>
+          <select id="langSel" onchange="alert('App Language পরিবর্তিত হয়েছে: ' + this.value)">
+            <option value="বাংলা">বাংলা</option>
+            <option value="English">English</option>
+            <option value="العربية">العربية</option>
+            <option value="日本語">日本語</option>
+            <option value="Español">Español</option>
+            <option value="Français">Français</option>
+            <option value="हिन्दी">हिन्दी</option>
+          </select>
+        </div>
+
+        <!-- ACCOUNT MANAGER -->
+        <div class="card" style="background:var(--bg);">
+          <div style="font-size:17px; font-weight:700;">Account Manager</div>
+          <div class="sub">Delete Account (৩০ দিনের মধ্যে রিকভার), Add Another Account (সর্বোচ্চ ২টি)</div>
+          <div class="row" style="flex-wrap:wrap;">
+            <button class="btn btn-err btn-sm" onclick="deleteAccountReq()">Delete Account</button>
+            <button class="btn btn-sec btn-sm" onclick="addAnotherAcc()">Add Another Account</button>
+          </div>
+          <div id="accMgrMsg" class="sub" style="margin-top:8px;"></div>
+        </div>
+
+        <!-- HELP & FEEDBACK -->
+        <div class="card" style="background:var(--bg);">
+          <div style="font-size:17px; font-weight:700;">Help & Feedback</div>
+          <div class="sub">Privacy Policy, Contact Us, Help Center</div>
+          <p style="font-size:13px; margin-bottom:8px;"><b>Privacy Policy:</b> আপনার ব্যক্তিগত তথ্য ও পরীক্ষার রেকর্ড গোপন রাখা হয়; অনুমতি ছাড়া তৃতীয় পক্ষকে দেওয়া হয় না। ৩০ দিনের মধ্যে লগইন করে ডিলিট অ্যাকাউন্ট পুনরুদ্ধার করা যায়।</p>
+          <p style="font-size:13px;"><b>Contact Us / Help Center:</b> examcontact26@gmail.com</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MORE PAGE -->
+    <div id="moreView" class="page-pad hidden">
+      <div class="card">
+        <div class="title">More</div>
+        <button class="opt-btn" onclick="openSettingsPage()">⚙️ Settings</button>
+        <button class="opt-btn" onclick="openBookmarksPage()">🔖 Bookmarks</button>
+        <button class="opt-btn" onclick="openAdminUsers()">👑 Who is using this app (Admin Only)</button>
+        <button class="opt-btn" onclick="logoutToLogin()">🚪 Logout</button>
+        <button class="opt-btn" onclick="logoutToLogin()">🔁 Login to another account</button>
+      </div>
+    </div>
+
+    <!-- STICKY BOTTOM START EXAM (SHOWN ON HOME) -->
+    <div id="bottomStartBar" class="bottom-bar">
+      <button class="btn" style="font-size:16px; padding:13px;" onclick="openCategoryPage()">Start Exam</button>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="modalBg" class="modal-bg" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h3 id="mTitle" style="margin-bottom:10px;"></h3>
+      <div id="mBody" style="font-size:14px; line-height:1.5;"></div>
+      <br />
+      <button class="btn btn-sm" onclick="closeModal()">বন্ধ করুন</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- STATE ---
+  let state = {
+    loggedInId: "student@example.com",
+    wrongPassCount: 0,
+    lockUntil: 0,
+    securityQ: "আপনার প্রিয় বিষয় কী?",
+    securityA: "math",
+    password: "1234",
+    emails: ["student@example.com"],
+    phone: "01700000000",
+    loginHistory: [
+      { device: "Mobile Browser • Chattogram", time: "Today" }
+    ],
+    profileCompleted: false,
+    profile: {
+      photo: "",
+      bio: "HSC & Admission preparation going on.",
+      firstName: "Adnan",
+      lastName: "",
+      school: "Govt High School",
+      sscGpa: "5.00",
+      college: "Govt College",
+      className: "HSC completed",
+      secondTimer: "no",
+      hscGpa: "5.00",
+      expectedHscGpa: "",
+      hobby: "Coding & Problem Solving"
+    },
+    scanCredits: 10,
+    sentRequests: [],
+    incomingRequests: ["সাব্বির রহমান", "মিথিলা আক্তার"],
+    blockedUsers: [],
+    friendCategories: {},
+    challenges: [
+      { from: "তানভীর হাসান", q: "নিউটনের গতির ২য় সূত্রের গাণিতিক রূপ কী? | F=ma, F=mv, P=mv, E=mc2 | F=ma | বল = ভর × ত্বরণ।" }
+    ],
+    secNotifications: ["নতুন সেশন শুরু হয়েছে (2026-11-21)."],
+    chats: {
+      "তানভীর হাসান": [{ sender: "তানভীর হাসান", text: "আজকে কোন অধ্যায়ের এক্সাম দিচ্ছ?" }],
+      "নুসরাত জাহান": [{ sender: "নুসরাত জাহান", text: "ক্যামিস্ট্রি নোটটা শেয়ার করবে?" }],
+      "HSC Study Group": [{ sender: "System", text: "গ্রুপে নতুন সদস্য যুক্ত হতে পারমিশন প্রয়োজন।" }]
+    },
+    bookmarks: [],
+    deletedPending: false,
+    accountsCount: 1,
+    allUsersDemo: [
+      { name: "Adnan (Current)", role: "User/Admin", status: "Online" },
+      { name: "তানভীর হাসান", role: "Student", status: "Online" },
+      { name: "নুসরাত জাহান", role: "Student", status: "Offline" }
+    ]
+  };
+
+  const suggestedFriends = [
+    { name: "তানভীর হাসান", school: "Chattogram Collegiate", college: "Chattogram College", hobby: "Coding & Math" },
+    { name: "নুসরাত জাহান", school: "Dr. Khastagir School", college: "Haji Mohammad Mohsin College", hobby: "Biology & Reading" },
+    { name: "রাফি আহমেদ", school: "Rajshahi Collegiate", college: "Rajshahi College", hobby: "Physics & Chess" }
+  ];
+
+  // --- PAGE 1: LOGIN & LOCKOUT ---
+  setInterval(() => {
+    const now = Date.now();
+    const btn = document.getElementById("loginBtn");
+    const msg = document.getElementById("loginMsg");
+    if (state.lockUntil > now) {
+      const left = Math.ceil((state.lockUntil - now) / 1000);
+      btn.disabled = true;
+      msg.className = "alert err";
+      msg.textContent = `অনেকবার ভুল পাসওয়ার্ড! ${left} সেকেন্ড পর আবার চেষ্টা করুন।`;
+    } else if (btn.disabled && state.lockUntil !== 0) {
+      btn.disabled = false;
+      msg.className = "alert ok";
+      msg.textContent = "লক শেষ হয়েছে, এখন লগইন করতে পারেন।";
+    }
+  }, 500);
+
+  function calcLockSec(count) {
+    if (count >= 30) return 120;
+    if (count >= 20) return 60;
+    if (count >= 10) return 30;
+    return 0;
+  }
+
+  function doLogin() {
+    if (Date.now() < state.lockUntil) return;
+    const id = document.getElementById("loginId").value.trim();
+    const pass = document.getElementById("loginPass").value;
+    const msg = document.getElementById("loginMsg");
+
+    if (pass === state.password) {
+      state.wrongPassCount = 0;
+      state.loggedInId = id || state.emails[0];
+      state.loginHistory.unshift({ device: navigator.platform || "Device", time: new Date().toLocaleTimeString() });
+      state.secNotifications.unshift(`নতুন লগইন শনাক্ত হয়েছে: ${id || "Account"} (${new Date().toLocaleTimeString()})`);
+      msg.classList.add("hidden");
+
+      document.getElementById("loginView").classList.add("hidden");
+      document.getElementById("appShell").classList.remove("hidden");
+
+      if (state.deletedPending) {
+        const keep = confirm("আপনার অ্যাকাউন্ট ডিলিট হওয়ার ৩০ দিনের মধ্যে রয়েছে। অ্যাকাউন্টটি কি পুনরুদ্ধার করবেন (Don't delete)?");
+        if (keep) state.deletedPending = false;
+      }
+
+      if (!state.profileCompleted) {
+        openProfilePage(true);
+      } else {
+        goHome();
+      }
+    } else {
+      state.wrongPassCount++;
+      const lockSec = calcLockSec(state.wrongPassCount);
+      if (lockSec > 0) state.lockUntil = Date.now() + lockSec * 1000;
+      msg.className = "alert err";
+      msg.textContent = `ভুল পাসওয়ার্ড! মোট ভুল: ${state.wrongPassCount}` + (lockSec ? ` — ${lockSec} সেকেন্ড লক করা হয়েছে।` : "");
+    }
+  }
+
+  function forgotPass() {
+    const val = prompt("আগে লগইন করা Email বা Phone নম্বর লিখুন:");
+    if (!val) return;
+    const clean = val.trim();
+    if (state.emails.includes(clean) || clean === state.phone) {
+      const np = prompt("যাচাই সফল! নতুন Password দিন:");
+      if (np) {
+        state.password = np;
+        alert("নতুন পাসওয়ার্ড সেট হয়েছে!");
+      }
+    } else {
+      alert("এই Email বা Phone নম্বর দিয়ে আগে কোনো লগইন রেকর্ড পাওয়া যায়নি।");
+    }
+  }
+
+  function securityQuestionPrompt() {
+    const ans = prompt(`${state.securityQ} (Demo উত্তর: ${state.securityA})`);
+    if (ans === null) return;
+    if (ans.trim().toLowerCase() === state.securityA.toLowerCase()) {
+      alert("Security Question সঠিক হয়েছে!");
+    } else {
+      alert("উত্তর সঠিক নয়।");
+    }
+  }
+
+  // --- NAVIGATION ---
+  const allViews = [
+    "homeView", "catView", "qInputView", "examView", "resultView",
+    "profileView", "notifView", "chatView", "bookmarksView", "settingsView", "moreView"
+  ];
+
+  function showView(viewId, title = "ExamHub", showBack = true) {
+    allViews.forEach(v => document.getElementById(v).classList.add("hidden"));
+    document.getElementById(viewId).classList.remove("hidden");
+    document.getElementById("brandTitle").textContent = title;
+    document.getElementById("backBtn").classList.toggle("hidden", !showBack);
+    document.getElementById("bottomStartBar").classList.toggle("hidden", viewId !== "homeView");
+  }
+
+  function goHome() {
+    if (!state.profileCompleted) {
+      alert("প্রথমে প্রোফাইল সম্পূর্ণ করুন।");
+      return;
+    }
+    showView("homeView", "ExamHub", false);
+    renderHome();
+  }
+
+  // --- PAGE 2: HOME DASHBOARD ---
+  const rotItems = [
+    "<b>Performance Record #1:</b> গড় স্কোর ৮৪% • সর্বোচ্চ স্কোর ৯২% • ৬টি পরীক্ষা সম্পন্ন",
+    "<b>Performance Record #2:</b> সঠিকতার হার ৮৮% • গড় উত্তর সময় ৩৭ সেকেন্ড",
+    "<b>Performance Record #3:</b> চ্যালেঞ্জ উইন রেট ৮০% • টানা ৫ দিন প্র্যাকটিস"
+  ];
+  let rotIdx = 0;
+  setInterval(() => {
+    rotIdx = (rotIdx + 1) % rotItems.length;
+    const el = document.getElementById("rotatingRecord");
+    if (el) el.innerHTML = rotItems[rotIdx];
+  }, 2600);
+
+  function renderHome() {
+    document.getElementById("rotatingRecord").innerHTML = rotItems[rotIdx];
+    document.getElementById("creditPill").textContent = `Scan Credits: ${state.scanCredits}`;
+    renderFriendSuggestions();
+  }
+
+  function renderFriendSuggestions() {
+    const box = document.getElementById("suggestList");
+    box.innerHTML = "";
+    suggestedFriends.forEach(f => {
+      if (state.blockedUsers.includes(f.name)) return;
+      const isSent = state.sentRequests.includes(f.name);
+      const row = document.createElement("div");
+      row.className = "friend-card";
+      row.innerHTML = `
+        <div class="row" style="cursor:pointer;" onclick="openOtherUserProfile('${f.name}')">
+          <div class="avatar">${f.name[0]}</div>
+          <div>
+            <div style="font-weight:700; font-size:14px;">${f.name}</div>
+            <div class="sub" style="margin:0;">ফুল প্রোফাইল দেখতে ক্লিক করুন</div>
+          </div>
+        </div>
+        <button class="btn btn-sm ${isSent ? 'btn-sec' : ''}" onclick="toggleFriendRequest('${f.name}', event)">
+          ${isSent ? 'Request Sent' : 'Add Friend'}
+        </button>
+      `;
+      box.appendChild(row);
+    });
+  }
+
+  function toggleFriendRequest(name, ev) {
+    if (ev) ev.stopPropagation();
+    if (state.sentRequests.includes(name)) {
+      state.sentRequests = state.sentRequests.filter(x => x !== name);
+    } else {
+      state.sentRequests.push(name);
+    }
+    renderFriendSuggestions();
+    renderFriendReqTab("sent");
+  }
+
+  function openOtherUserProfile(name) {
+    const f = suggestedFriends.find(x => x.name === name) || { name, school: "School", college: "College", hobby: "Study" };
+    const isFriend = true; // Demo view
+    const cat = state.friendCategories[name] || "random";
+    openModal(name, `
+      <div style="text-align:center; margin-bottom:10px;">
+        <div class="avatar" style="width:72px; height:72px; font-size:26px; margin:0 auto 8px;">${f.name[0]}</div>
+        <div style="font-size:18px; font-weight:700;">${f.name}</div>
+        <div class="sub">Bio: ${isFriend ? "Focused learner & exam challenger." : "Learner"}</div>
+      </div>
+      <div class="row" style="justify-content:space-between; margin-bottom:12px;">
+        <button class="btn btn-sm" onclick="toggleFriendRequest('${f.name}'); closeModal();">
+          ${state.sentRequests.includes(f.name) ? 'Request Sent' : 'Add Friend'}
+        </button>
+        <button class="btn btn-sec btn-sm" onclick="closeModal(); openChatPage();">Message</button>
+        <button class="btn btn-err btn-sm" onclick="blockUser('${f.name}'); closeModal();">Block</button>
+      </div>
+      <p><b>School:</b> ${f.school}</p>
+      <p><b>College:</b> ${f.college}</p>
+      <p><b>Hobby:</b> ${f.hobby}</p>
+      <div class="field" style="margin-top:10px;">
+        <label>Friend Category (random / common / best friend)</label>
+        <select onchange="state.friendCategories['${f.name}']=this.value; alert('Category set: '+this.value)">
+          <option ${cat==='random'?'selected':''} value="random">random</option>
+          <option ${cat==='common'?'selected':''} value="common">common</option>
+          <option ${cat==='best friend'?'selected':''} value="best friend">best friend</option>
+        </select>
+      </div>
+    `);
+  }
+
+  function blockUser(name) {
+    if (!state.blockedUsers.includes(name)) state.blockedUsers.push(name);
+    renderFriendSuggestions();
+    renderBlockedList();
+  }
+// --- PAGE 3: CATEGORY & 2ND TIMER ELIGIBILITY ---
+  let activeExamMeta = { category: "Medical", durationSec: 60 };
+
+  function openCategoryPage() {
+    showView("catView", "Select Category");
+    const is2nd = state.profile.secondTimer === "yes";
+    document.getElementById("engBtn").classList.toggle("hidden", is2nd);
+    updateVarsityEligibility();
+  }
+
+  function updateVarsityEligibility() {
+    const is2nd = state.profile.secondTimer === "yes";
+    const sel = document.getElementById("varsitySelect");
+    const note = document.getElementById("varsityNote");
+    const secondTimerAllowed = ["CU", "KU", "RU", "JU", "SUST", "GST", "Agriculture"];
+
+    Array.from(sel.options).forEach(opt => {
+      if (!opt.value) return;
+      if (is2nd) {
+        opt.hidden = !secondTimerAllowed.includes(opt.value);
+      } else {
+        opt.hidden = false;
+      }
+    });
+
+    if (sel.value && sel.options[sel.selectedIndex].hidden) sel.value = "";
+    note.textContent = is2nd
+      ? "আপনি 2nd Timer হিসেবে চিহ্নিত—শুধুমাত্র ২য় বার আবেদনযোগ্য ভার্সিটিগুলো দেখানো হচ্ছে।"
+      : "আপনি 1st Timer হিসেবে চিহ্নিত—সব ক্যাটাগরি ও ভার্সিটি উপলব্ধ।";
+  }
+
+  function startVarsityExam() {
+    const v = document.getElementById("varsitySelect").value;
+    if (!v) return alert("আগে একটি Varsity সিলেক্ট করুন।");
+    selectCategory(`University (${v})`, 60);
+  }
+
+  function selectCategory(catName, durationSec) {
+    activeExamMeta = { category: catName, durationSec };
+    showView("qInputView", "Question Setup");
+  }
+
+  // --- PAGE 4: CAMERA / IMAGE SCAN + PASTE ---
+  function scanImageToQuestions(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (state.scanCredits <= 0) {
+      alert("আপনার Scan Credits শেষ! নতুন ক্রেডিট যুক্ত করুন।");
+      return;
+    }
+    state.scanCredits--;
+    document.getElementById("creditPill").textContent = `Scan Credits: ${state.scanCredits}`;
+    document.getElementById("scanStatus").textContent =
+      `"${file.name}" স্ক্যান করে প্রশ্ন, অপশন ও ব্যাখ্যা আলাদা করা হয়েছে (১ ক্রেডিট ব্যবহৃত)।`;
+
+    const sampleExtracted =
+      `স্ক্যানকৃত প্রশ্ন (${file.name}): নিউটনের ১ম সূত্র কিসের সাথে সম্পর্কিত? | জড়তা, ভরবেগ, ক্ষমতা, চাপ | জড়তা | বাহ্যিক বল প্রয়োগ না করলে স্থির বস্তু স্থির থাকে।`;
+    const ta = document.getElementById("rawQuestions");
+    ta.value = ta.value.trim() ? `${ta.value.trim()}\n${sampleExtracted}` : sampleExtracted;
+  }
+
+  // --- PAGE 5: EXAM & RESULT ---
+  let parsedQuestions = [];
+  let userAnswers = {};
+  let lockedQuestions = {};
+  let examInterval = null;
+  let elapsedSec = 0;
+  let remainingSec = 60;
+
+  function launchExamFromInput() {
+    const lines = document.getElementById("rawQuestions").value
+      .split("\n")
+      .map(l => l.trim())
+      .filter(Boolean);
+
+    parsedQuestions = [];
+    lines.forEach((line, idx) => {
+      const parts = line.split("|").map(p => p.trim());
+      const qText = parts[0] || `প্রশ্ন ${idx + 1}`;
+      const opts = (parts[1] || "Option A, Option B, Option C, Option D").split(",").map(o => o.trim()).filter(Boolean);
+      const ans = parts[2] || opts[0];
+      const exp = parts[3] || "ব্যাখ্যা সংযুক্ত করা হয়নি।";
+      parsedQuestions.push({ id: idx, qText, opts, ans, exp });
+    });
+
+    if (!parsedQuestions.length) return alert("কমপক্ষে একটি প্রশ্ন দিন।");
+
+    userAnswers = {};
+    lockedQuestions = {};
+    elapsedSec = 0;
+    remainingSec = activeExamMeta.durationSec;
+
+    showView("examView", "Live Exam");
+    document.getElementById("examCatLabel").textContent = activeExamMeta.category;
+    renderExamQuestions();
+    startExamTimer();
+  }
+
+  function startExamTimer() {
+    clearInterval(examInterval);
+    updateTimerText();
+    examInterval = setInterval(() => {
+      elapsedSec++;
+      remainingSec--;
+      updateTimerText();
+      if (remainingSec <= 0) {
+        submitExam();
+      }
+    }, 1000);
+  }
+
+  function updateTimerText() {
+    const m = String(Math.floor(Math.max(0, remainingSec) / 60)).padStart(2, "0");
+    const s = String(Math.max(0, remainingSec) % 60).padStart(2, "0");
+    document.getElementById("examTimer").textContent = `${m}:${s}`;
+  }
+
+  function renderExamQuestions() {
+    const container = document.getElementById("examQuestionsContainer");
+    container.innerHTML = "";
+    parsedQuestions.forEach((q, idx) => {
+      const isLocked = !!lockedQuestions[q.id];
+      const chosen = userAnswers[q.id];
+      const isBookmarked = state.bookmarks.some(b => b.qText === q.qText);
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="between" style="margin-bottom:8px;">
+          <b>Q${idx + 1}. ${q.qText}</b>
+          <button class="btn btn-sec btn-sm" onclick="toggleBookmark(${idx})">
+            ${isBookmarked ? '★ Bookmarked' : '☆ Bookmark'}
+          </button>
+        </div>
+        ${q.opts.map(opt => `
+          <button class="opt-btn ${chosen === opt ? 'selected' : ''}"
+            ${isLocked ? 'disabled' : ''}
+            onclick="lockAnswer(${q.id}, '${opt.replace(/'/g, "\\'")}')">
+            ${opt}
+          </button>
+        `).join("")}
+        <div class="sub" style="margin:0;">${isLocked ? '🔒 উত্তর Lock করা হয়েছে' : 'একবার সিলেক্ট করলে Lock হয়ে যাবে'}</div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function lockAnswer(qId, opt) {
+    if (lockedQuestions[qId]) return;
+    userAnswers[qId] = opt;
+    lockedQuestions[qId] = true;
+    renderExamQuestions();
+  }
+
+  function toggleBookmark(idx) {
+    const q = parsedQuestions[idx];
+    const exists = state.bookmarks.some(b => b.qText === q.qText);
+    if (exists) {
+      state.bookmarks = state.bookmarks.filter(b => b.qText !== q.qText);
+    } else {
+      state.bookmarks.push({ ...q, category: activeExamMeta.category });
+    }
+    renderExamQuestions();
+  }
+
+  function submitExam() {
+    clearInterval(examInterval);
+    let correct = 0, wrong = 0, skip = 0;
+
+    parsedQuestions.forEach(q => {
+      const u = userAnswers[q.id];
+      if (!u) skip++;
+      else if (u === q.ans) correct++;
+      else wrong++;
+    });
+
+    // Hidden penalties calculated at submission
+    const negMarkPerWrong = 0.25;
+    const negDeducted = +(wrong * negMarkPerWrong).toFixed(2);
+    const secondTimerPenalty = state.profile.secondTimer === "yes" ? 5 : 0;
+    const gpaBonus = 10;
+    const totalScore = +(correct - negDeducted - secondTimerPenalty + gpaBonus).toFixed(2);
+    const answeredCount = correct + wrong;
+    const accuracy = answeredCount ? Math.round((correct / answeredCount) * 100) : 0;
+    const avgSec = (elapsedSec / parsedQuestions.length).toFixed(1);
+
+    showView("resultView", "Exam Result");
+    document.getElementById("resultSummary").innerHTML = `
+      <div class="title">ফলাফল ও বিশ্লেষণ</div>
+      <p><b>Category:</b> ${activeExamMeta.category}</p>
+      <p><b>Negative Marking:</b> -${negDeducted}</p>
+      <p><b>Total Score:</b> ${totalScore}</p>
+      <p><b>সঠিক:</b> ${correct} | <b>ভুল:</b> ${wrong} | <b>Skip:</b> ${skip}</p>
+      <p><b>Accuracy:</b> ${accuracy}%</p>
+      <p><b>গড় সময়/প্রশ্ন:</b> ${avgSec} সেকেন্ড</p>
+      <p><b>Total Time:</b> ${elapsedSec} সেকেন্ড</p>
+    `;
+
+    const pmBox = document.getElementById("resultPostMortem");
+    pmBox.innerHTML = `<div class="title" style="font-size:16px;">Answer & Post-Mortem</div>`;
+    parsedQuestions.forEach((q, idx) => {
+      const u = userAnswers[q.id];
+      const isRight = u === q.ans;
+      const cls = !u ? "" : (isRight ? "res-correct" : "res-wrong");
+      const div = document.createElement("div");
+      div.className = `card ${cls}`;
+      div.innerHTML = `
+        <b>Q${idx + 1}. ${q.qText}</b>
+        <p style="margin-top:6px;"><b>আপনার উত্তর:</b> ${u || "Skip"}</p>
+        ${!isRight ? `<p><b>সঠিক উত্তর:</b> ${q.ans}</p>` : ""}
+        <p style="margin-top:6px;"><b>ব্যাখ্যা / অতিরিক্ত তথ্য / Post-Mortem:</b> ${q.exp}</p>
+      `;
+      pmBox.appendChild(div);
+    });
+  }
+
+  // --- PROFILE ---
+  function openProfilePage(mandatoryFirst = false) {
+    showView("profileView", "Profile");
+    const p = state.profile;
+    document.getElementById("pBio").value = p.bio;
+    document.getElementById("pFirst").value = p.firstName;
+    document.getElementById("pLast").value = p.lastName;
+    document.getElementById("pSchool").value = p.school;
+    document.getElementById("pSsc").value = p.sscGpa;
+    document.getElementById("pCollege").value = p.college;
+    document.getElementById("pClass").value = p.className;
+    document.getElementById("pSecondTimer").value = p.secondTimer;
+    document.getElementById("pHsc").value = p.hscGpa;
+    document.getElementById("pPhone").value = state.phone;
+    document.getElementById("pEmail").value = state.emails[0] || "";
+    document.getElementById("pHobby").value = p.hobby;
+    toggleHscField();
+    refreshProfileHeader();
+    if (mandatoryFirst) {
+      const m = document.getElementById("profMsg");
+      m.className = "alert err";
+      m.textContent = "প্রথমবার লগইনে বাধ্যতামূলক তথ্য পূরণ করে Profile Save করতে হবে।";
+    }
+  }
+
+  function toggleHscField() {
+    const cls = document.getElementById("pClass").value;
+    const lbl = document.getElementById("hscLabel");
+    if (["1st year", "2nd year", "HSC examinee"].includes(cls)) {
+      lbl.textContent = "আপনি HSC-তে GPA কত পাবেন বলে আশা করেন? (বাধ্যতামূলক)";
+    } else {
+      lbl.textContent = "HSC GPA (বাধ্যতামূলক)";
+    }
+  }
+
+  function setQuickBio(txt) {
+    document.getElementById("pBio").value = txt;
+  }
+
+  function setAvatarImg(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    state.profile.photo = url;
+    refreshProfileHeader();
+  }
+
+  function refreshProfileHeader() {
+    const p = state.profile;
+    document.getElementById("profFullNameDisplay").textContent = `${p.firstName} ${p.lastName}`.trim() || "User";
+    document.getElementById("profBioDisplay").textContent = p.bio || "";
+    const av = document.getElementById("profAvatar");
+    if (p.photo) {
+      av.innerHTML = `<img src="${p.photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`;
+    } else {
+      av.textContent = (p.firstName || "U")[0];
+    }
+  }
+
+  function saveProfile() {
+    const bioWords = document.getElementById("pBio").value.trim().split(/\s+/).filter(Boolean).length;
+    if (bioWords > 240) return alert("Bio সর্বোচ্চ 240 words-এর মধ্যে হতে হবে।");
+
+    const ssc = document.getElementById("pSsc").value.trim();
+    const hsc = document.getElementById("pHsc").value.trim();
+    const phone = document.getElementById("pPhone").value.trim();
+    if (!ssc || !hsc || !phone) {
+      return alert("SSC GPA, HSC/Expected GPA এবং Phone Number বাধ্যতামূলক!");
+    }
+
+    state.profile.bio = document.getElementById("pBio").value.trim();
+    state.profile.firstName = document.getElementById("pFirst").value.trim() || "User";
+    state.profile.lastName = document.getElementById("pLast").value.trim();
+    state.profile.school = document.getElementById("pSchool").value.trim();
+    state.profile.sscGpa = ssc;
+    state.profile.college = document.getElementById("pCollege").value.trim();
+    state.profile.className = document.getElementById("pClass").value;
+    state.profile.secondTimer = document.getElementById("pSecondTimer").value;
+    state.profile.hscGpa = hsc;
+    state.phone = phone;
+    const em = document.getElementById("pEmail").value.trim();
+    if (em && !state.emails.includes(em)) state.emails.push(em);
+    state.profile.hobby = document.getElementById("pHobby").value.trim();
+    state.profileCompleted = true;
+
+    refreshProfileHeader();
+    alert("Profile সংরক্ষণ করা হয়েছে!");
+    goHome();
+  }
+
+  // --- NOTIFICATIONS & CHALLENGES ---
+  function openNotifPage() {
+    showView("notifView", "Notifications");
+    renderFriendReqTab("incoming");
+    renderChallenges();
+    document.getElementById("secNotifList").innerHTML = state.secNotifications.map(n => `<p>• ${n}</p>`).join("");
+  }
+
+  function renderFriendReqTab(mode) {
+    const box = document.getElementById("friendReqBox");
+    if (mode === "sent") {
+      box.innerHTML = state.sentRequests.length
+        ? state.sentRequests.map(n => `
+            <div class="between" style="margin-bottom:6px;">
+              <span>${n}</span>
+              <button class="btn btn-err btn-sm" onclick="toggleFriendRequest('${n}')">Cancel</button>
+            </div>`).join("")
+        : `<div class="sub">কোনো Sent Friend Request নেই।</div>`;
+    } else {
+      box.innerHTML = state.incomingRequests.length
+        ? state.incomingRequests.map((n, i) => `
+            <div class="between" style="margin-bottom:6px;">
+              <span>${n} আপনাকে Request পাঠিয়েছে</span>
+              <button class="btn btn-ok btn-sm" onclick="state.incomingRequests.splice(${i},1); renderFriendReqTab('incoming');">Accept</button>
+            </div>`).join("")
+        : `<div class="sub">নতুন কোনো Friend Request নেই।</div>`;
+    }
+  }
+
+  function sendChallenge() {
+    const target = document.getElementById("chalTarget").value.trim() || "সবাইকে";
+    const q = document.getElementById("chalQuestion").value.trim();
+    if (!q) return alert("চ্যালেঞ্জের প্রশ্ন লিখুন।");
+    state.challenges.unshift({ from: `${state.profile.firstName} → ${target}`, q });
+    document.getElementById("chalQuestion").value = "";
+    renderChallenges();
+    alert("Challenge পাঠানো হয়েছে!");
+  }
+
+  function renderChallenges() {
+    const box = document.getElementById("challengeList");
+    box.innerHTML = state.challenges.map((c, idx) => `
+      <div class="card" style="padding:10px; margin-bottom:8px;">
+        <div style="font-size:12px; color:var(--muted);">From: ${c.from}</div>
+        <div style="font-size:13px; margin:4px 0;">${c.q.split("|")[0]}</div>
+        <button class="btn btn-sm" onclick="quickChallengeExam(${idx})">Challenge Exam দিন</button>
+      </div>
+    `).join("");
+  }
+
+  function quickChallengeExam(idx) {
+    document.getElementById("rawQuestions").value = state.challenges[idx].q;
+    activeExamMeta = { category: "Challenge Exam", durationSec: 60 };
+    launchExamFromInput();
+  }
+
+  // --- CHAT ---
+  function openChatPage() {
+    showView("chatView", "Chat");
+    renderChatMessages();
+  }
+
+  function createStudyGroup() {
+    const friendName = prompt("কোন বন্ধুকে গ্রুপে যুক্ত করতে চান? (তার পারমিশন নেওয়া হয়েছে ধরে নেওয়া হবে)");
+    if (!friendName) return;
+    const gName = `${friendName} Study Group`;
+    if (!state.chats[gName]) {
+      state.chats[gName] = [{ sender: "System", text: `${friendName}-এর অনুমতি নিয়ে "${gName}" তৈরি হয়েছে।` }];
+      const sel = document.getElementById("chatPartner");
+      const opt = document.createElement("option");
+      opt.value = gName;
+      opt.textContent = `${gName} (Group)`;
+      sel.appendChild(opt);
+      sel.value = gName;
+    }
+    renderChatMessages();
+  }
+
+  function renderChatMessages() {
+    const partner = document.getElementById("chatPartner").value;
+    const box = document.getElementById("chatBox");
+    const msgs = state.chats[partner] || [];
+    box.innerHTML = msgs.map(m => `<p style="margin-bottom:6px; font-size:13px;"><b>${m.sender}:</b> ${m.text}</p>`).join("");
+  }
+
+  function sendChatMsg() {
+    const partner = document.getElementById("chatPartner").value;
+    const inp = document.getElementById("chatInput");
+    const txt = inp.value.trim();
+    if (!txt) return;
+    state.chats[partner].push({ sender: state.profile.firstName, text: txt });
+    inp.value = "";
+    renderChatMessages();
+  }
+
+  // --- BOOKMARKS, SETTINGS & MORE ---
+  function openBookmarksPage() {
+    showView("bookmarksView", "Bookmarks");
+    const box = document.getElementById("bookmarkList");
+    box.innerHTML = state.bookmarks.length
+      ? state.bookmarks.map(b => `
+          <div class="card" style="background:var(--bg);">
+            <b>${b.qText}</b>
+            <p class="sub" style="margin:4px 0;">উত্তর: ${b.ans}</p>
+            <p style="font-size:13px;">ব্যাখ্যা: ${b.exp}</p>
+          </div>`).join("")
+      : `<div class="sub">এখনো কোনো প্রশ্ন Bookmark করা হয়নি।</div>`;
+  }
+
+  function openSettingsPage() {
+    showView("settingsView", "Settings");
+    renderBlockedList();
+  }
+
+  function openMorePage() {
+    showView("moreView", "More");
+  }
+
+  function renderBlockedList() {
+    document.getElementById("blockedList").textContent =
+      state.blockedUsers.length ? state.blockedUsers.join(", ") : "কেউ ব্লক করা নেই";
+  }
+
+  function openAccountModal() {
+    openModal("Account Settings", `
+      <p><b>Security Question:</b> <span id="secQHidden">••••••</span>
+        <button class="btn btn-sec btn-sm" onclick="document.getElementById('secQHidden').textContent='${state.securityQ} (${state.securityA})'">See</button>
+      </p>
+      <button class="btn btn-sm" style="margin-bottom:12px;" onclick="changeSecQ()">Change Security Question</button>
+
+      <p><b>Password:</b> <span id="passHidden">••••</span>
+        <button class="btn btn-sec btn-sm" onclick="document.getElementById('passHidden').textContent='${state.password}'">See</button>
+      </p>
+      <button class="btn btn-sm" style="margin-bottom:12px;" onclick="changePass()">Change Password</button>
+
+      <p><b>Emails:</b> ${state.emails.join(", ")}</p>
+      <div class="row" style="margin:6px 0 12px;">
+        <button class="btn btn-sec btn-sm" onclick="addEmail()">Add Email</button>
+        <button class="btn btn-sec btn-sm" onclick="changeEmail()">Change Email</button>
+      </div>
+
+      <p><b>Phone:</b> ${state.phone} <button class="btn btn-sec btn-sm" onclick="changePhone()">Change Phone</button></p>
+
+      <div style="margin-top:12px;">
+        <b>Login Data:</b>
+        ${state.loginHistory.map(h => `<div class="sub" style="margin:2px 0;">• ${h.device} — ${h.time}</div>`).join("")}
+      </div>
+    `);
+  }
+
+  function changeSecQ() {
+    const curAns = prompt("বতর্মান Security Question-এর উত্তর দিন:");
+    if (curAns !== state.securityA) return alert("বতর্মান উত্তর মিলেনি।");
+    const nq = prompt("নতুন Security Question লিখুন:");
+    const na = prompt("নতুন উত্তর লিখুন:");
+    if (nq && na) {
+      state.securityQ = nq;
+      state.securityA = na;
+      alert("Security Question পরিবর্তন হয়েছে!");
+    }
+  }
+
+  function changePass() {
+    const cur = prompt("বতর্মান Password দিন:");
+    if (cur !== state.password) return alert("বতর্মান Password ভুল।");
+    const np = prompt("নতুন Password দিন:");
+    if (np) {
+      state.password = np;
+      alert("Password পরিবর্তন হয়েছে!");
+    }
+  }
+
+  function addEmail() {
+    const em = prompt("নতুন Email যুক্ত করুন:");
+    if (em && !state.emails.includes(em)) {
+      state.emails.push(em);
+      alert("Email যুক্ত হয়েছে!");
+    }
+  }
+
+  function changeEmail() {
+    const cur = prompt("বতর্মান Email লিখুন:");
+    const idx = state.emails.indexOf(cur);
+    if (idx === -1) return alert("বতর্মান Email পাওয়া যায়নি।");
+    const ne = prompt("নতুন Email লিখুন:");
+    if (ne) {
+      state.emails[idx] = ne;
+      alert("Email পরিবর্তন হয়েছে!");
+    }
+  }
+
+  function changePhone() {
+    const cur = prompt("বতর্মান Phone Number লিখুন:");
+    if (cur !== state.phone) return alert("বতর্মান Phone Number ভুল।");
+    const np = prompt("নতুন Phone Number লিখুন:");
+    if (np) {
+      state.phone = np;
+      alert("Phone Number পরিবর্তন হয়েছে!");
+    }
+  }
+
+  function applyTheme() {
+    document.body.classList.toggle("dark", document.getElementById("themeSel").value === "dark");
+  }
+
+  function applyBgColor() {
+    const col = document.getElementById("bgColorPicker").value;
+    document.documentElement.style.setProperty("--primary", col);
+  }
+
+  function applyBgImg() {
+    const val = document.getElementById("bgImgSel").value;
+    document.getElementById("dashMidBg").style.backgroundImage = val;
+  }
+
+  function deleteAccountReq() {
+    state.deletedPending = true;
+    document.getElementById("accMgrMsg").textContent =
+      "Account delete রিকোয়েস্ট দেওয়া হয়েছে। ৩০ দিনের মধ্যে লগইন করে 'Don't delete' করলে পুনরুদ্ধার হবে।";
+  }
+function addAnotherAcc() {
+    if (state.accountsCount >= 2) {
+      return alert("একই নম্বর/ইমেইলে সর্বোচ্চ ২টি অ্যাকাউন্ট খোলা যায়!");
+    }
+    state.accountsCount++;
+    alert(`নতুন অ্যাকাউন্ট যুক্ত হয়েছে (মোট: ${state.accountsCount}/2)।`);
+  }
+
+  function openAdminUsers() {
+    openModal("Who is using this app (Admin Only)",
+      state.allUsersDemo.map(u => `<p>• <b>${u.name}</b> — ${u.role} (${u.status})</p>`).join("")
+    );
+  }
+
+  function logoutToLogin() {
+    clearInterval(examInterval);
+    document.getElementById("appShell").classList.add("hidden");
+    document.getElementById("loginView").classList.remove("hidden");
+    document.getElementById("loginPass").value = "";
+  }
+
+  function openModal(title, html) {
+    document.getElementById("mTitle").textContent = title;
+    document.getElementById("mBody").innerHTML = html;
+    document.getElementById("modalBg").style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById("modalBg").style.display = "none";
+  }
+</script>
+</body>
+</html>
